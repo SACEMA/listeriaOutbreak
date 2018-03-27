@@ -1,0 +1,51 @@
+---
+title: "Modelling the decline in Listeria Cases"
+subtitle: "Confidential"
+author: "SACEMA"
+output: 
+  pdf_document:
+    fig_caption: yes
+    highlight: tango
+    latex_engine: xelatex
+  html_document: default
+mainfont: Arial
+geometry: margin=.75in
+fontsize: 12pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source('epiCurve.R')
+#source('epiFunctions.R')
+baseline <- mean(cases$count)
+recallEffect <- 0.65
+expectedShelfLife <- 14
+```
+
+## Baseline cases
+
+The expected baseline number of cases was set to the mean weekly number of cases for Week 40 of 2017 through week 8 of 2018 (n = `r round(baseline,1)`). Observed variation around this mean was approximately Poisson distributed, so Poisson noise around the expected value is assumed in the model.
+
+## Decline in risky exposures
+
+An initial assessment suggests that the product recall was `r recallEffect*100`\% effective within one week. We assume a linear decline in risky exposures over the course of the week following the annoucement of the product recall. We assume a further exponential decline through time as the remaining contaminated product is consumed or discarded. We have initially assumed the average remaining time that the contaminated product poses a risk is `r round(expectedShelfLife/7,1)` weeks. This assumption is probably conservative and is easily modified. The resulting temporal profile for risky exposures is represetnted below.
+
+```{r exposure, echo=FALSE}
+# Add exposure plot
+```
+
+## Anticipated future cases
+
+The number of future cases is determined by two primary factors: the temporal profile of risky exposures and the incubation period. The incubation period distribution has been characterized, initially, based on data from previous outbreaks in Europe (see Goulet _et al_. 2013 _BMC Infectious Diseases_). As data on the incubation period becomes available for the current outbreak in South Africa, we will use these data to update estimates that are likely to be more relevant for this outbreak, given the differences in background population and exposure route.
+
+```{r echo=FALSE}
+# Add incubation period plot
+```
+
+Combining the temporal profile for risky exposures and the estimated distribution of the incubation period, we can begin to assess the anticipated decline in the epidemic curve as a result of increased awareness and product recall. The figures below show plausible ranges for the number of cases under the assumptions of the model and the probability of seeing no cases for two weeks as a function of time.
+
+```{r echo=FALSE}
+# Add plots
+```
+
+If the number of cases through time is consistently above the maximum of the expected range, this indicates that the assumptions of the model are violated in important ways and is probably a sign that there is an additonal source of risky exposure that remains unidentified.
