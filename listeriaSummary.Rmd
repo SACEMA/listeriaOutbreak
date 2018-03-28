@@ -1,7 +1,7 @@
 ---
 title: "Modelling the decline in Listeria Cases"
-subtitle: "Confidential"
-author: "SACEMA"
+subtitle: "Initial concept note - Confidential"
+author: "Prepared by SACEMA"
 output: 
   pdf_document:
     fig_caption: yes
@@ -15,11 +15,14 @@ fontsize: 12pt
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+require(tidyverse)
+require(bbmle)
 source('epiCurve.R')
-#source('epiFunctions.R')
+source('incubationDist.R')
+source('epiFunctions.R')
 baseline <- mean(cases$count)
-recallEffect <- 0.65
-expectedShelfLife <- 14
+recallEffect <- 0.65 # after 1 week
+expectedShelfLife <- 2 # weeks
 ```
 
 ## Baseline cases
@@ -28,24 +31,58 @@ The expected baseline number of cases was set to the mean weekly number of cases
 
 ## Decline in risky exposures
 
-An initial assessment suggests that the product recall was `r recallEffect*100`\% effective within one week. We assume a linear decline in risky exposures over the course of the week following the annoucement of the product recall. We assume a further exponential decline through time as the remaining contaminated product is consumed or discarded. We have initially assumed the average remaining time that the contaminated product poses a risk is `r round(expectedShelfLife/7,1)` weeks. This assumption is probably conservative and is easily modified. The resulting temporal profile for risky exposures is represetnted below.
+An initial assessment suggests that the product recall was `r recallEffect*100`\% effective within one week. We assume a corresponding decline in risky exposures over this timeframe. We assume a further geometric decline through time as the remaining contaminated product is consumed or discarded. We have initially assumed the average remaining time that the contaminated product poses a risk is `r round(expectedShelfLife,1)` weeks. This assumption is probably conservative and is easily modified. The resulting temporal profile for risky exposures is represetnted below (Figure 1A).
 
 ```{r exposure, echo=FALSE}
-# Add exposure plot
+ep <- exposureProfile(baseline,recallEffect)
+minGen <- qpois(0.025,ep$riskExp)
+maxGen <- qpois(0.975,ep$riskExp)
 ```
 
 ## Anticipated future cases
 
-The number of future cases is determined by two primary factors: the temporal profile of risky exposures and the incubation period. The incubation period distribution has been characterized, initially, based on data from previous outbreaks in Europe (see Goulet _et al_. 2013 _BMC Infectious Diseases_). As data on the incubation period becomes available for the current outbreak in South Africa, we will use these data to update estimates that are likely to be more relevant for this outbreak, given the differences in background population and exposure route.
+The number of future cases is determined by two primary factors: the temporal profile of risky exposures and the incubation period. The incubation period distribution has been characterized, initially, based on data from previous outbreaks in Europe and the US (see Goulet _et al_. 2013 _BMC Infectious Diseases_, Figure 1B). As data on the incubation period becomes available for the current outbreak in South Africa, we will use these data to update estimates that are likely to be more relevant for this outbreak, given the differences in background population and the source of exposure. Note that the long tail in the distribution of pregnacy-related cases is not particularly well captured by the iniital characterization of the incubation period distribution.
 
-```{r echo=FALSE}
-# Add incubation period plot
+```{r,echo=FALSE,fig.width=7.5, fig.height=3, fig.cap='(A) Temporal profile of risky expsoures. (B) Comparison of non-parametric (grey) and parametric (green) survival analyses for incubation data. Based on data from Goulet 2013.'}
+par(mar=c(5,4,2,2), mfcol=c(1,2))
+plot(ep$week+.5,ep$riskExp,ylim=c(0,45),bty='L',ann=F,yaxt='n',xaxt='n',yaxs='i',xpd=T,type='s',lwd=3)
+lines(ep$week+.5,minGen,col='darkgrey',type='s')
+lines(ep$week+.5,maxGen,col='darkgrey',type='s')
+axis(2,seq(0,45,5),cex.axis=.85)
+axis(1,seq(1,18,2),cex.axis=.85)
+mtext('Week of the year',1,3)
+mtext('Cases generated',2,2.5)
+mtext('A',3,line=1,adj=-.3,font=2)
+
+par(mar=c(5,4,2,1))
+plot(npmle_perInc,ylim=c(0,1),bty='L',ann=F,yaxt='n',yaxs='i',xpd=NULL)
+axis(2,seq(0,1,.4),cex.axis=.85)
+axis(2,seq(.2,1,.4),cex.axis=.85)
+mtext('Time since infection (days)',1,3)
+mtext('Proportion incubating',2,2.5)
+mtext('B',3,line=1,adj=-.3,font=2)
+curve(1-pgamma(x,exp(coef(estIncGamma)[1])*exp(coef(estIncGamma)[2]),exp(coef(estIncGamma)[2])),add=T,lwd=3,col='darkgreen')
+points(exp(coef(estIncGamma)[1]),1.1,pch=21,cex=1.1,xpd=T,col='darkgreen',lwd=3)
+arrows(ciIncGamma[1],1.1,ciIncGamma[2],1.1,le=.02,angle = 90,lwd=3,code = 3,col='darkgreen',xpd=T)
+mtext('Mean and 95% CI',3,line=.5,adj=1.1,font=2,col='darkgreen',cex=.8,xpd=NULL)
+abline(v=3.5+seq(0,28,7),col='red',lty=3)
 ```
 
-Combining the temporal profile for risky exposures and the estimated distribution of the incubation period, we can begin to assess the anticipated decline in the epidemic curve as a result of increased awareness and product recall. The figures below show plausible ranges for the number of cases under the assumptions of the model and the probability of seeing no cases for two weeks as a function of time.
+Combining the temporal profile for risky exposures and the estimated distribution of the incubation period, we can begin to assess the anticipated decline in the epidemic curve as a result of increased awareness and product recall. Figure 2 shows plausible ranges for the number of cases under the assumptions of the model.
 
-```{r echo=FALSE}
-# Add plots
+```{r,echo=FALSE,fig.width=4, fig.height=4, fig.cap='Range of cases expected through time, from Week 8 to Week 18 of 2018.'}
+weekRange <- 8:18
+par(mar=c(5,4,2,2))
+plot(weekRange,rep(NA,11),ylim=c(0,45),bty='L',xlab='Week of the year',ylab='Anticipated number of cases')
+arrows(weekRange,projCurve(minGen)[weekRange],weekRange,projCurve(maxGen)[weekRange],le=.02,angle = 90,lwd=3,code = 3,col='darkblue',xpd=T)
+#projCurve(ep$riskExp)
+# Can we get to probablility of seeing no cases for two consecutive weeks through time?
 ```
 
-If the number of cases through time is consistently above the maximum of the expected range, this indicates that the assumptions of the model are violated in important ways and is probably a sign that there is an additonal source of risky exposure that remains unidentified.
+**If the number of cases through time is consistently or dramatically above the maximum of the expected range, this indicates that the assumptions of the model are violated in important ways and is probably a sign that there is an additonal source of risky exposure that remains unidentified.**
+
+
+
+
+
+**Contact:** Please address questions, feedback, and requests related to this document to Prof. Juliet Pulliam, Director of SACEMA, at <pulliam@sun.ac.za>.
