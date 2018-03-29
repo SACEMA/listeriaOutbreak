@@ -3,7 +3,11 @@
 # For half-life of 2 weeks, prob = 1-sqrt(2)/2
 # For mean of 2 weeks, prob = 1/3
 
-exposureProfile <- function(baseline,effectiveness,prop = 1/3,recallWeek=10,maxWeek=18){
+calcProb <- function(meanTime){
+  return(1/(meanTime+1))
+}
+
+exposureProfile <- function(baseline,effectiveness,prop = 1-calcProb(expectedShelfLife),recallWeek=10,maxWeek=18){
   
   re <- c(rep(baseline,recallWeek-1),baseline*(1-effectiveness))
   while(length(re)<maxWeek){

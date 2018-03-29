@@ -37,43 +37,10 @@ if(sname %in% dir()){
   perInc_min[ipOr] <- incDat$incPerMin[ipOr]
   perInc_max[ipOr] <- incDat$incPerMax[ipOr]
   
+  # Nonparametric fit
   npmle_perInc <- icfit(perInc_min,perInc_max,conf.int = T,control=icfitControl(B=bsIterations))
-  
-  nllGammaIcens <- function(logmean = NULL, lograte = NULL){
-    pp <- exp(c(logmean,lograte))
-    alpha <- pp[1]*pp[2]
-    lambda <- pp[2]
-    # Calculate probabilities of being in intervals
-    intervalProb <- (
-      pgamma(perInc_max
-             , shape = alpha, rate = lambda
-             , log = F) -
-        pgamma(perInc_min
-               , shape = alpha, rate = lambda
-               , log = F)
-    )
-    # Adjust for data with two exposures
-    firstExp <- (
-      pgamma(perInc_min[ipOr] + 0.5
-             , shape = alpha, rate = lambda
-             , log = F) -
-        pgamma(perInc_min[ipOr] - 0.5
-               , shape = alpha, rate = lambda
-               , log = F)
-    )
-    secondExp <- (
-      pgamma(perInc_max[ipOr] + 0.5
-             , shape = alpha, rate = lambda
-             , log = F) -
-        pgamma(perInc_max[ipOr] - 0.5
-               , shape = alpha, rate = lambda
-               , log = F)
-    )
-    intervalProb[ipOr] <- firstExp+secondExp
-    nll <- -sum(log(intervalProb))
-    return(nll)
-  }
-  
+
+  # Parametric fit
   initParams <- c(logmean = log(1), lograte = log(1))
   estIncGamma <- mle(nllGammaIcens,start = as.list(initParams))
   ciIncGamma <- confint(estIncGamma)
