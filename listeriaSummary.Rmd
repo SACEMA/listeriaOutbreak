@@ -77,7 +77,7 @@ Combining the temporal profile for risky exposures and the estimated distributio
 ```{r,echo=FALSE,fig.width=4, fig.height=4, fig.cap='Range of cases expected through time, from Week 8 to Week 18 of 2018.'}
 weekRange <- 8:18
 par(mar=c(5,4,2,2))
-plot(weekRange,rep(NA,11),ylim=c(0,45),bty='L',xlab='Week of the year',ylab='Anticipated number of cases')
+plot(weekRange,rep(NA,11),ylim=c(0,45),bty='L',yaxs='i',xlab='Week of the year',ylab='Anticipated number of cases')
 arrows(weekRange,projCurve(minGen)[weekRange],weekRange,projCurve(maxGen)[weekRange],le=.02,angle = 90,lwd=3,code = 3,col='darkblue',xpd=T)
 #projCurve(ep$riskExp)
 # Can we get to probablility of seeing no cases for two consecutive weeks through time?
