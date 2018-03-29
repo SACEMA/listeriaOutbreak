@@ -1,10 +1,10 @@
-# incubationDist.R
+# incubationDistSens.R
 require(tidyverse)
 require(bbmle)
 require(interval)
 
 fname <- '~/Dropbox\ (Personal)/SACEMA/NICD/Listeria/Goulet2013.xlsx'
-sname <- 'incDistGoulet.Rdata'
+sname <- 'incDistGouletSens.Rdata'
 
 if(sname %in% dir()){
   load(sname)
@@ -28,8 +28,13 @@ if(sname %in% dir()){
   ipKnown <- which(incDat$treatment == 'known')
   perInc_min[ipKnown] <- incDat$incPer[ipKnown] - .5
   perInc_max[ipKnown] <- incDat$incPer[ipKnown] + .5
+  # Add uncertainty for incubation periods based on sampling times
+  ipSens <- which(incDat$treatment == 'sens')
+  perInc_min[ipSens] <- incDat$incPerMax[ipSens] - sampleDelay
+  perInc_min[perInc_min<0] <- 0
+  perInc_max[ipSens] <- incDat$incPerMax[ipSens]
   # Add uncertainty for left censored data
-  ipLeft <- which(incDat$treatment %in% c('sens','censored'))
+  ipLeft <- which(incDat$treatment == 'censored')
   perInc_min[ipLeft] <- 0
   perInc_max[ipLeft] <- incDat$incPerMax[ipLeft]
   # Add uncertainty for interval censored data
@@ -74,8 +79,8 @@ if(sname %in% dir()){
     return(nll)
   }
   
-  initParams <- c(logmean = log(1), lograte = log(1))
-  estIncGamma <- mle(nllGammaIcens,start = as.list(initParams))
+  initParams <- c(logmean = log(20), lograte = log(1))
+  estIncGamma <- mle(nllGammaIcens,start = as.list(initParams),method = )
   ciIncGamma <- confint(estIncGamma)
   
   ciIncGamma_Rate <- round(unname(exp(ciIncGamma[2,])),2)
