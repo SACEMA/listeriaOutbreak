@@ -1,7 +1,4 @@
 # epiCurve.R
-require(tidyverse)
-require(bbmle)
-
 fname <- '~/Documents/ListeriaData/Data for sitrep 210321.xlsx'
 
 epiCurve <- (
@@ -16,13 +13,6 @@ cases <- (
   %>% filter(., (year==2018 & epiweeks < 9) | (year==2017 & epiweeks >=40))
 )
 
-cases$count
-mean(cases$count)
-var(cases$count)
-sd(cases$count)
-plot(cases$count,type = 's',ylim=c(0,45))
-abline(h=mean(cases$count),col='red',lty=3)
-
 hist(cases$count,seq(0,45,3))
 
 nbfit <- mle2(nll.nb
@@ -36,5 +26,3 @@ AIC(nbfit)
 AIC(pfit)
 
 exp(coef(pfit))
-
-mean(cases$count)
