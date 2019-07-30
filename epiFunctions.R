@@ -14,7 +14,7 @@ exposureProfile <- function(baseline,effectiveness,prop = 1-calcProb(expectedShe
     re <- c(re,prop*re[length(re)])
   }
   
-  exp <- data_frame(week = 1:maxWeek, riskExp = re)
+  exp <- tibble(week = 1:maxWeek, riskExp = re)
   
 }
 

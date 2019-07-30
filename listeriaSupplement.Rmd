@@ -1,8 +1,7 @@
 ---
-title: "Modelling the decline in Listeria cases"
-subtitle: "Initial concept note - Confidential"
-date: "Last updated: 2018-03-29"
-author: "Prepared by SACEMA"
+title: "Technical Supplement"
+subtitle: "Use of model-based projections during the 2017-2018 listeriosis outbreak in South Africa"
+author: ""
 output: 
   pdf_document:
     fig_caption: yes
@@ -30,9 +29,18 @@ recallEffect <- 0.65 # after 1 week
 expectedShelfLife <- 2 # weeks
 ```
 
+> This supplementary material is hosted by Eurosurveillance as supporting information alongside the article _Use of model-based projections during the 2017-2018 listeriosis outbreak in South Africa_ on behalf of the authors who remain responsible for the accuracy and appropriateness of the content. The same standards for ethics, copyright, attributions and permissions as for the article apply. Eurosurveillance is not responsible for the maintenance of any links or email addresses provided therein.
+
 ## Baseline cases
 
-The expected baseline number of cases was set to the mean weekly number of cases for Week 40 of 2017 through week 8 of 2018 (n = `r round(baseline,1)`). Observed variation around this mean was approximately Poisson distributed, so Poisson noise around the expected value is assumed in the model.
+The expected baseline number of cases was set to the mean weekly number of cases for Week 40 of 2017 through week 8 of 2018 (`r round(baseline,1)`). Observed variation around this mean was approximately Poisson distributed (Table X), so Poisson noise around the expected value is assumed in the model.
+
+```{r baseline, echo=FALSE}
+ep <- exposureProfile(baseline,recallEffect)
+minGen <- qpois(0.025,ep$riskExp)
+maxGen <- qpois(0.975,ep$riskExp)
+```
+
 
 ## Decline in risky exposures
 
@@ -79,16 +87,6 @@ weekRange <- 8:18
 par(mar=c(5,4,2,2))
 plot(weekRange,rep(NA,11),ylim=c(0,45),bty='L',yaxs='i',xlab='Week of the year',ylab='Anticipated number of cases')
 arrows(weekRange,projCurve(minGen)[weekRange],weekRange,projCurve(maxGen)[weekRange],le=.02,angle = 90,lwd=3,code = 3,col='darkblue',xpd=T)
-#projCurve(ep$riskExp)
-# Can we get to probablility of seeing no cases for two consecutive weeks through time?
 ```
 
-## Interpretation
-
-**If the number of cases through time is consistently or dramatically above the maximum of the expected range, this indicates that the assumptions of the model are violated in important ways and is probably a sign that there is an additonal source of risky exposure that remains unidentified.**
-
-
-
-
-
-**Contact:** Please address questions, feedback, and requests related to this document to Prof. Juliet Pulliam, Director of SACEMA, at <pulliam@sun.ac.za>.
+The code for all analyses and the original report containing the projections are available at DOI: [10.5281/zenodo.2244314](dx.doi.org/10.5281/zenodo.2244314).
